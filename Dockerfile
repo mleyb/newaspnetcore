@@ -1,13 +1,15 @@
 FROM microsoft/dotnet:2.1-sdk-alpine AS builder
-WORKDIR /
-COPY . .
-RUN dotnet restore newaspnetcore.csproj
-RUN dotnet publish newaspnetcore.csproj -o /dockerout/ -c Release
+WORKDIR /app
+
+COPY . ./
+RUN dotnet restore
+RUN dotnet publish -c Release -o out
 
 FROM microsoft/dotnet:2.1-aspnetcore-runtime-alpine
 WORKDIR /app
-EXPOSE 80 5000
+COPY --from=builder /app/out .
 
-COPY --from=builder /dockerout .
+ENV ASPNETCORE_URLS http://+:5000
+EXPOSE 5000
 
 ENTRYPOINT ["dotnet", "newaspnetcore.dll"]
